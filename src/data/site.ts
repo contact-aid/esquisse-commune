@@ -3,8 +3,8 @@ export const siteConfig = {
   brandAlternates: ["L'esquisse", 'esquisse.aidhabitat.fr'],
   siteUrl: 'https://esquisse.aidhabitat.fr',
   email: 'contact@aidhabitat.fr',
-  phoneDisplay: '06 37 94 64 10',
-  phoneLink: '0637946410',
+  phoneDisplay: '06 16 16 95 66',
+  phoneLink: '0616169566',
   address: {
     street: '16 rue Léo Lagrange',
     postalCode: '35131',
