@@ -3,15 +3,15 @@ import {getExcerptFallback, type BlogPost} from './blog';
 const WEBFLOW_API_BASE = 'https://api.webflow.com/v2';
 
 const FIELD_SLUGS = {
-  h1: process.env.WEBFLOW_BLOG_H1_FIELD ?? 'h1',
-  author: process.env.WEBFLOW_BLOG_AUTHOR_FIELD ?? 'author',
-  excerpt: process.env.WEBFLOW_BLOG_EXCERPT_FIELD ?? 'excerpt',
-  contentHtml: process.env.WEBFLOW_BLOG_CONTENT_FIELD ?? 'content',
-  coverImage: process.env.WEBFLOW_BLOG_COVER_IMAGE_FIELD ?? 'cover-image',
-  ogImage: process.env.WEBFLOW_BLOG_OG_IMAGE_FIELD ?? 'og-image',
-  seoTitle: process.env.WEBFLOW_BLOG_SEO_TITLE_FIELD ?? 'seo-title',
-  seoDescription: process.env.WEBFLOW_BLOG_SEO_DESCRIPTION_FIELD ?? 'seo-description',
-  publishedAt: process.env.WEBFLOW_BLOG_PUBLISHED_AT_FIELD ?? 'published-at',
+  h1: process.env.WEBFLOW_BLOG_H1_FIELD ?? "name",
+  author: process.env.WEBFLOW_BLOG_AUTHOR_FIELD ?? "author",
+  excerpt: process.env.WEBFLOW_BLOG_EXCERPT_FIELD ?? "extrait-de-l-article",
+  contentHtml: process.env.WEBFLOW_BLOG_CONTENT_FIELD ?? "corps-de-l-article",
+  coverImage: process.env.WEBFLOW_BLOG_COVER_IMAGE_FIELD ?? "banniere",
+  ogImage: process.env.WEBFLOW_BLOG_OG_IMAGE_FIELD ?? "banniere",
+  seoTitle: process.env.WEBFLOW_BLOG_SEO_TITLE_FIELD ?? "meta-titre",
+  seoDescription: process.env.WEBFLOW_BLOG_SEO_DESCRIPTION_FIELD ?? "meta-description",
+  publishedAt: process.env.WEBFLOW_BLOG_PUBLISHED_AT_FIELD ?? "date-de-publication",
 } as const;
 
 function getWebflowConfig() {
@@ -72,7 +72,7 @@ function getAssetUrl(value: unknown) {
 
 function mapBlogPost(item: any): BlogPost {
   const fieldData = item?.fieldData ?? {};
-  const contentHtml = fieldData[FIELD_SLUGS.contentHtml] ?? '';
+  const contentHtml = fieldData[FIELD_SLUGS.contentHtml] ?? fieldData['corps-de-l-article'] ?? fieldData['corps-article'] ?? '';
 
   return {
     id: item.id,
