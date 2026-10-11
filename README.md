@@ -14,8 +14,8 @@ Prérequis : Node.js 20+.
 
 ## Réservations
 
-La réservation est envoyée directement depuis le formulaire via la fonction Vercel `/api/reservation`.
-Les emails sont transmis à `contact@aidhabitat.fr` depuis l'adresse d'envoi configurée côté serveur.
+La réservation est envoyée via `/api/reservation`. Sur Easypanel, `npm start` lance le serveur Node qui sert `dist/` et exécute cette API. Le fichier `api/reservation.ts` reste compatible avec Vercel.
+Les emails sont transmis à `lesquissecommune@gmail.com` depuis l'adresse d'envoi configurée côté serveur.
 Le paiement Stripe pour les salles de réunion et les événements sera branché dans une itération suivante.
 
 ## Pages légales
@@ -48,3 +48,17 @@ La commande `npm run build` :
 2. récupère les articles Webflow
 3. génère les pages statiques du blog et les fichiers JSON associés dans `dist/blog-data`
 
+
+## Hébergement Easypanel
+
+- Installation : `npm ci` (inclure les dépendances de développement pour le build).
+- Build : `npm run build`. Les variables Webflow sont fournies par l’environnement de build.
+- Démarrage : `npm start`, port `PORT` ou 3000.
+- Variables serveur : `RESEND_API_KEY`, `RESERVATION_MAIL_FROM` (adresse d’un domaine vérifié dans Resend), `RESERVATION_MAIL_TO=lesquissecommune@gmail.com`.
+- Le destinataire Gmail est distinct de l’expéditeur Resend.
+
+Le serveur statique `serve dist -s` ne traite pas les routes API et ne doit pas être utilisé pour les réservations.
+
+Pour tester le formulaire en développement, lancer d’abord le build puis `PORT=3001 npm start` avec les variables Resend dans l’environnement, et `npm run dev` dans un autre terminal. Vite transmet `/api` au serveur sur le port 3001. Une soumission réussie envoie réellement un email.
+
+Vérification sans envoi d’email : `npm test` (Resend simulé) et `npm run lint`.

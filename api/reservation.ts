@@ -44,7 +44,7 @@ type ApiResponse = {
   json: (body: unknown) => void;
 };
 
-const fallbackMailTo = 'contact@aidhabitat.fr';
+const fallbackMailTo = 'lesquissecommune@gmail.com';
 const fallbackMailFrom = "L'esquisse commune <no-reply@aidhabitat.fr>";
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {

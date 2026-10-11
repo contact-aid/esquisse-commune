@@ -5,30 +5,34 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build && npx tsx --env-file=.env.production scripts/prerender.tsx",
+    "build": "vite build && tsx scripts/prerender.tsx",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "start": "tsx server/index.ts",
+    "test": "tsx --test server/index.test.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
     "date-fns": "^4.1.0",
+    "express": "^5.3.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "react": "^19.0.0",
     "react-day-picker": "^9.14.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.13.1",
+    "tsx": "^4.23.15",
     "vite": "^6.2.0"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.21",
     "tailwindcss": "^4.1.14",
-    "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

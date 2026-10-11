@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import {loadEnv} from 'vite';
 import path from 'node:path';
 import {renderToString} from 'react-dom/server';
 import React from 'react';
@@ -19,7 +20,12 @@ import {
 import {BlogPageDataProvider} from '../src/lib/blog-context';
 import {renderJsonLdTags, renderSeoTags} from '../src/lib/seo';
 import {STATIC_SITE_ROUTES} from '../src/lib/site-routes';
-import {listBlogPosts} from '../src/lib/webflow.server';
+
+// Charger les fichiers locaux tout en conservant les variables de l'hébergeur.
+for (const [key, value] of Object.entries(loadEnv('production', process.cwd(), ''))) {
+  process.env[key] ??= value;
+}
+const {listBlogPosts} = await import('../src/lib/webflow.server');
 
 type StaticSeo = Parameters<typeof renderSeoTags>[0];
 
