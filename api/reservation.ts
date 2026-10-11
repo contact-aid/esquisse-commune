@@ -1,3 +1,5 @@
+import nodemailer from 'nodemailer';
+
 type ReservationType = 'bureau' | 'salle' | 'event';
 
 type ContactPayload = {
@@ -67,6 +69,43 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     const resendApiKey = process.env.RESEND_API_KEY;
     const toAddress = process.env.RESERVATION_MAIL_TO ?? fallbackMailTo;
     const fromAddress = process.env.RESERVATION_MAIL_FROM ?? fallbackMailFrom;
+
+    if (process.env.SMTP_HOST) {
+      const port = Number(process.env.SMTP_PORT || 465);
+      if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD || !Number.isInteger(port) || port < 1 || port > 65535) {
+        res.status(503).json({ok: false, message: "Le service d'envoi n'est pas encore configuré."});
+        return;
+      }
+      try {
+        const transport = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port,
+          secure: port === 465,
+          requireTLS: port !== 465,
+          auth: {user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD},
+          connectionTimeout: 15000,
+          greetingTimeout: 15000,
+          socketTimeout: 30000,
+          disableFileAccess: true,
+          disableUrlAccess: true,
+        });
+        const result = await transport.sendMail({
+          from: fromAddress,
+          to: toAddress,
+          replyTo: payload.contact.email,
+          subject: buildReservationSubject(payload),
+          text: buildReservationText(payload),
+          html: buildReservationHtml(payload),
+        });
+        if (!result.accepted?.length) throw new Error('SMTP recipient rejected');
+        res.status(200).json({ok: true, message: 'Votre demande a bien été envoyée.'});
+      } catch (error) {
+        const code = typeof error === 'object' && error !== null && 'code' in error ? error.code : 'SMTP_ERROR';
+        console.error('Reservation SMTP error:', code);
+        res.status(502).json({ok: false, message: "L'email n'a pas pu être envoyé. Réessayez dans un instant."});
+      }
+      return;
+    }
 
     if (!resendApiKey) {
       res.status(500).json({

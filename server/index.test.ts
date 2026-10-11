@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {test, mock} from 'node:test';
+import nodemailer from 'nodemailer';
 import {mkdtemp, writeFile, rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
@@ -26,6 +27,7 @@ test('Easypanel sert le site et traite les réservations avec une réponse JSON'
     return originalFetch(input, init);
   };
   try {
+    delete process.env.SMTP_HOST;
     const page = await fetch(`${base}/bureaux-prives-chartres-de-bretagne`);
     assert.equal(page.status, 200);
     assert.equal(await page.text(), '<html>Accueil</html>');
@@ -65,7 +67,35 @@ test('Easypanel sert le site et traite les réservations avec une réponse JSON'
     });
     assert.equal(missingRoomCompany.status, 400);
     assert.equal((await missingRoomCompany.json()).ok, false);
+    process.env.SMTP_HOST = 'mail.aidhabitat.fr';
+    process.env.SMTP_PORT = '465';
+    process.env.SMTP_USER = 'lesquissecommune@aidhabitat.fr';
+    delete process.env.SMTP_PASSWORD;
+    assert.equal((await submit()).status, 503);
+    process.env.SMTP_PASSWORD = 'test-only-password';
+    process.env.RESERVATION_MAIL_FROM = 'lesquissecommune@aidhabitat.fr';
+    let smtpOptions: unknown;
+    let smtpMail: {from: string; to: string; replyTo: string} | undefined;
+    let rejectSmtp = false;
+    mock.method(nodemailer, 'createTransport', (options: unknown) => {
+      smtpOptions = options;
+      return {sendMail: async (mail: {from: string; to: string; replyTo: string}) => {
+        if (rejectSmtp) return {accepted: []};
+        smtpMail = mail;
+        return {accepted: [mail.to]};
+      }};
+    });
+    const smtpSuccess = await submit();
+    assert.equal(smtpSuccess.status, 200);
+    assert.equal((await smtpSuccess.json()).ok, true);
+    assert.equal((smtpOptions as {secure: boolean}).secure, true);
+    assert.equal(smtpMail?.from, 'lesquissecommune@aidhabitat.fr');
+    assert.equal(smtpMail?.to, 'lesquissecommune@gmail.com');
+    assert.equal(smtpMail?.replyTo, 'test@example.com');
+    rejectSmtp = true;
+    assert.equal((await submit()).status, 502);
   } finally {
+    mock.restoreAll();
     globalThis.fetch = originalFetch;
     process.env = originalEnv;
     await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
