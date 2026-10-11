@@ -134,7 +134,7 @@ function parsePayload(body: unknown): ReservationRequestPayload | null {
     !offerLabel ||
     !requestedDate ||
     !requestedTime ||
-    !contact.company ||
+    (reservationType === 'salle' && !contact.company) ||
     !contact.email ||
     !contact.phone
   ) {

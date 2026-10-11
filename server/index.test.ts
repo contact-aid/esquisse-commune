@@ -43,7 +43,7 @@ test('Easypanel sert le site et traite les réservations avec une réponse JSON'
     const payload = {
       reservationType: 'bureau', offerLabel: 'Le Module',
       requestedDate: '12 octobre 2026', requestedTime: '09:30',
-      contact: {company: 'Test', fullName: 'Test', email: 'test@example.com', phone: '0600000000'},
+      contact: {company: '', fullName: 'Test', email: 'test@example.com', phone: '0600000000'},
     };
     const submit = () => fetch(`${base}/api/reservation`, {
       method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload),
@@ -59,6 +59,12 @@ test('Easypanel sert le site et traite les réservations avec une réponse JSON'
     const mail = sentMail as Record<string, unknown> | undefined;
     assert.deepEqual(mail?.to, ['lesquissecommune@gmail.com']);
     assert.equal(mail?.reply_to, 'test@example.com');
+    const missingRoomCompany = await fetch(`${base}/api/reservation`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({...payload, reservationType: 'salle', roomBooking: {duration: '1 heure'}}),
+    });
+    assert.equal(missingRoomCompany.status, 400);
+    assert.equal((await missingRoomCompany.json()).ok, false);
   } finally {
     globalThis.fetch = originalFetch;
     process.env = originalEnv;
