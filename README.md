@@ -59,6 +59,12 @@ La commande `npm run build` :
 
 Le serveur statique `serve dist -s` ne traite pas les routes API et ne doit pas être utilisé pour les réservations.
 
+### Envoi SMTP o2switch
+
+L’API utilise SMTP en priorité lorsque `SMTP_HOST` est renseigné. Configurer `SMTP_HOST=mail.aidhabitat.fr`, `SMTP_PORT=465`, `SMTP_USER=lesquissecommune@aidhabitat.fr`, `SMTP_PASSWORD` (mot de passe de la boîte, uniquement dans les variables privées de l’hébergeur), `RESERVATION_MAIL_FROM="L’esquisse commune <lesquissecommune@aidhabitat.fr>"` et `RESERVATION_MAIL_TO=lesquissecommune@gmail.com`.
+
+La connexion valide le certificat TLS. Le bouton Répondre utilise l’adresse du demandeur. En cas d’échec SMTP, aucun second envoi automatique via Resend n’est tenté. Resend reste disponible pour les installations sans `SMTP_HOST`. Le port du domaine Easypanel doit correspondre à `PORT` (80 dans l’environnement Nixpacks actuel).
+
 Pour tester le formulaire en développement, lancer d’abord le build puis `PORT=3001 npm start` avec les variables Resend dans l’environnement, et `npm run dev` dans un autre terminal. Vite transmet `/api` au serveur sur le port 3001. Une soumission réussie envoie réellement un email.
 
 Vérification sans envoi d’email : `npm test` (Resend simulé) et `npm run lint`.
