@@ -502,26 +502,6 @@ export function ReservationForm({prefill}: {prefill: ReservationPrefill}) {
 
     setSubmitState({status: 'submitting', message: ''});
 
-    const isLocalPreview =
-      typeof window !== 'undefined' &&
-      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
-    if (isLocalPreview) {
-      window.setTimeout(() => {
-        trackEvent('generate_lead', {
-          lead_type: reservationType,
-          offer_name: selectedOfferLabel,
-          booking_mode: roomBookingMode ?? 'visit',
-          currency: 'EUR',
-        });
-        setSubmitState({
-          status: 'success',
-          message: 'Votre demande a bien été envoyée.',
-        });
-      }, 450);
-      return;
-    }
-
     try {
       const response = await fetch('/api/reservation', {
         method: 'POST',
@@ -566,6 +546,14 @@ export function ReservationForm({prefill}: {prefill: ReservationPrefill}) {
             : undefined,
         }),
       });
+
+      if (!response.headers.get('content-type')?.includes('application/json')) {
+        setSubmitState({
+          status: 'error',
+          message: `Le service d'envoi est indisponible. Contactez-nous à ${siteConfig.email}.`,
+        });
+        return;
+      }
 
       const result = await response.json() as {ok?: boolean; message?: string};
 

@@ -2,7 +2,7 @@ export const siteConfig = {
   brand: "L'esquisse commune",
   brandAlternates: ["L'esquisse", 'esquisse.aidhabitat.fr'],
   siteUrl: 'https://esquisse.aidhabitat.fr',
-  email: 'contact@aidhabitat.fr',
+  email: 'lesquissecommune@gmail.com',
   phoneDisplay: '06 16 16 95 66',
   phoneLink: '0616169566',
   address: {
