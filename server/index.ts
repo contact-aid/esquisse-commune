@@ -1,4 +1,5 @@
 import express from 'express';
+import {existsSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import reservationHandler from '../api/reservation';
@@ -11,8 +12,23 @@ export function createApp(distDirectory = path.resolve('dist')) {
   app.use('/api', (_req, res) => {
     res.status(404).json({ok: false, message: 'Service introuvable.'});
   });
-  app.use(express.static(distDirectory));
-  app.get('/{*path}', (_req, res) => {
+  // Une seule URL par page, sans « / » final (comme dans le sitemap et les canonicals).
+  app.use((req, res, next) => {
+    if ((req.method === 'GET' || req.method === 'HEAD') && req.path.length > 1 && req.path.endsWith('/')) {
+      const query = req.originalUrl.slice(req.originalUrl.indexOf('?') === -1 ? req.originalUrl.length : req.originalUrl.indexOf('?'));
+      res.redirect(301, (req.path.replace(/\/+$/, '') || '/') + query);
+      return;
+    }
+    next();
+  });
+  // redirect: false empêche express d'ajouter un « / » aux dossiers (/blog/article → /blog/article/).
+  app.use(express.static(distDirectory, {redirect: false}));
+  app.get('/{*path}', (req, res) => {
+    const prerendered = path.resolve(distDirectory, '.' + req.path, 'index.html');
+    if (prerendered.startsWith(path.resolve(distDirectory) + path.sep) && existsSync(prerendered)) {
+      res.sendFile(prerendered);
+      return;
+    }
     res.sendFile(path.join(distDirectory, 'index.html'));
   });
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
