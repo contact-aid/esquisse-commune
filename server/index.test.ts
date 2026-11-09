@@ -102,3 +102,36 @@ test('Easypanel sert le site et traite les réservations avec une réponse JSON'
     await rm(directory, {recursive: true, force: true});
   }
 });
+
+test('les pages pré-rendues sont servies sans « / » final, et la version avec « / » redirige', async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'esquisse-slash-'));
+  const {mkdir} = await import('node:fs/promises');
+  await writeFile(path.join(directory, 'index.html'), '<html>Accueil</html>');
+  await mkdir(path.join(directory, 'blog', 'salle-reunion-rennes'), {recursive: true});
+  await writeFile(path.join(directory, 'blog', 'index.html'), '<html>Blog</html>');
+  await writeFile(path.join(directory, 'blog', 'salle-reunion-rennes', 'index.html'), '<html>Article</html>');
+  const server = createApp(directory).listen(0, '127.0.0.1');
+  await new Promise<void>(resolve => server.once('listening', resolve));
+  const address = server.address();
+  assert.ok(address && typeof address === 'object');
+  const base = `http://127.0.0.1:${address.port}`;
+  try {
+    const article = await fetch(`${base}/blog/salle-reunion-rennes`, {redirect: 'manual'});
+    assert.equal(article.status, 200);
+    assert.equal(await article.text(), '<html>Article</html>');
+    const blog = await fetch(`${base}/blog`, {redirect: 'manual'});
+    assert.equal(blog.status, 200);
+    assert.equal(await blog.text(), '<html>Blog</html>');
+    const slash = await fetch(`${base}/blog/salle-reunion-rennes/?a=1`, {redirect: 'manual'});
+    assert.equal(slash.status, 301);
+    assert.equal(slash.headers.get('location'), '/blog/salle-reunion-rennes?a=1');
+    const home = await fetch(`${base}/`, {redirect: 'manual'});
+    assert.equal(home.status, 200);
+    assert.equal(await home.text(), '<html>Accueil</html>');
+    const traversal = await fetch(`${base}/..%2F..%2Fetc`, {redirect: 'manual'});
+    assert.equal(await traversal.text(), '<html>Accueil</html>');
+  } finally {
+    server.close();
+    await rm(directory, {recursive: true, force: true});
+  }
+});
